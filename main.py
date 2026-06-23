@@ -171,8 +171,7 @@ async def dashboard(request: Request):
     # Get data statistics
     data_stats = get_data_stats()
     
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "model_scores": model_scores,
         "best_model": best_model,
         "feature_importance": feature_importance,
