@@ -3,14 +3,14 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.2%2B-F7931E.svg)](https://scikit-learn.org)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success.svg)](https://demand-forecasting-gw2b.onrender.com/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success.svg)](https://demand-forecasting-s1kq.onrender.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An intelligent demand forecasting system that improves inventory accuracy and reduces supply chain costs by 15-25% using advanced machine learning. Built on the Walmart M5 competition dataset with production-ready FastAPI backend and interactive web dashboard.
 
 ## 🌐 **Live Demo**
 
-**🚀 Try it now**: [https://demand-forecasting-gw2b.onrender.com/](https://demand-forecasting-gw2b.onrender.com/)
+**🚀 Try it now**: [https://demand-forecasting-s1kq.onrender.com/](https://demand-forecasting-s1kq.onrender.com/)
 
 > ⏱️ **Note**: This is deployed on a free tier, so please allow **3-4 minutes** for the server to wake up on first visit. Subsequent requests will be fast!
 
@@ -47,7 +47,7 @@ An intelligent demand forecasting system that improves inventory accuracy and re
 ## 🚀 Quick Start
 
 ### 🌟 **Option 1: Try the Live Demo**
-**🔗 [https://demand-forecasting-gw2b.onrender.com/](https://demand-forecasting-gw2b.onrender.com/)**
+**🔗 [https://demand-forecasting-s1kq.onrender.com/](https://demand-forecasting-s1kq.onrender.com/)**
 
 No installation required! Just click and start making predictions.  
 ⏱️ *Allow 3-4 minutes for server wake-up on first visit (free tier)*
@@ -942,7 +942,7 @@ graph TB
 
 ### 🌐 **Live Production Demo**
 This project is already deployed and running at:
-**[https://demand-forecasting-gw2b.onrender.com/](https://demand-forecasting-gw2b.onrender.com/)**
+**[https://demand-forecasting-s1kq.onrender.com/](https://demand-forecasting-s1kq.onrender.com/)**
 
 *Deployed on Render's free tier - allow 3-4 minutes for wake-up on first visit*
 
