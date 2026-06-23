@@ -1,640 +1,396 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
-    <title>AI Demand Forecasting Dashboard - Intelligent Supply Chain Optimization</title>
-    <meta name="description" content="Advanced AI-powered demand forecasting system for supply chain optimization with machine learning predictions">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
-    
-    <!-- Google Fonts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForecastAI — Demand Forecasting Console</title>
+    <meta name="description" content="A live demand-forecasting console: real-time ML telemetry, model leaderboard, and probabilistic forecasts on the Walmart M5 dataset.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236366F1%22/><path d=%22M18 62 L38 42 L52 54 L82 28%22 fill=%22none%22 stroke=%22white%22 stroke-width=%229%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="/static/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
 </head>
 <body>
-    <!-- Particle Background -->
-    <div id="particles-js"></div>
-    
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-robot"></i>
-                <span>ForecastAI</span>
-            </div>
-            <div class="nav-links">
-                <a href="#dashboard" class="nav-link active">Dashboard</a>
-                <a href="#predict" class="nav-link">Predict</a>
-                <a href="#analytics" class="nav-link">Analytics</a>
-                <div class="nav-indicator"></div>
-            </div>
-            <div class="nav-status">
-                <div class="status-indicator online"></div>
-                <span>System Online</span>
+    <div class="aurora" aria-hidden="true"></div>
+    <div class="grid-overlay" aria-hidden="true"></div>
+
+    <!-- ============================ NAV ============================ -->
+    <header class="nav">
+        <div class="nav-inner">
+            <a href="#top" class="brand">
+                <span class="mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l5-5 4 4 9-9"/><path d="M21 4v6h-6"/></svg>
+                </span>
+                ForecastAI
+                <span class="build" id="buildHash">m5·build —</span>
+            </a>
+            <nav class="nav-links" aria-label="Sections">
+                <a href="#top" class="nav-link active">Overview</a>
+                <a href="#sec-predict" class="nav-link">Forecast</a>
+                <a href="#sec-performance" class="nav-link">Signals</a>
+                <a href="#sec-data" class="nav-link">Data</a>
+            </nav>
+            <span class="nav-spacer"></span>
+            <div class="status-pill" title="Inference engine status">
+                <span class="live-dot" aria-hidden="true"></span>
+                <span><b>Engine live</b></span>
+                <span class="up-time mono" id="uptime">00:00:00</span>
             </div>
         </div>
-    </nav>
-    
-    <div class="container">
-        <!-- Hero Section -->
-        <header class="hero-section">
-            <div class="hero-content">
-                <div class="hero-badge">
-                    <i class="fas fa-brain"></i>
-                    <span>Powered by Advanced Machine Learning</span>
-                </div>
-                <h1 class="hero-title">
-                    <span class="gradient-text">AI Demand Forecasting</span>
-                    <span class="title-highlight">System</span>
-                </h1>
-                <p class="hero-subtitle">
-                    Revolutionizing supply chain management with intelligent predictions
-                    <br>Reduce costs by <strong>25%</strong> • Improve accuracy by <strong>40%</strong> • Real-time insights
-                </p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <div class="stat-number">30K+</div>
-                        <div class="stat-label">Products Analyzed</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">99.2%</div>
-                        <div class="stat-label">Accuracy Rate</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">< 100ms</div>
-                        <div class="stat-label">Response Time</div>
-                    </div>
-                </div>
+        <!-- Live demand ticker -->
+        <div class="ticker" aria-hidden="true">
+            <div class="ticker-track" id="tickerTrack"></div>
+        </div>
+    </header>
+
+    <main class="shell" id="top">
+        <!-- ============================ HERO ============================ -->
+        <section class="hero">
+            <div class="hero-copy reveal">
+                <span class="eyebrow">M5 · Walmart demand engine</span>
+                <h1>Forecast demand <span class="accent">before it happens.</span></h1>
+                <p class="sub">A probabilistic demand-forecasting console trained on the Walmart M5 dataset — streaming model telemetry, a live signal leaderboard, and confidence-banded forecasts you can run in real time.</p>
                 <div class="hero-actions">
-                    <button class="btn-hero-primary" onclick="scrollToSection('predict')">
-                        <i class="fas fa-magic"></i>
-                        Start Prediction
-                    </button>
-                    <button class="btn-hero-secondary" onclick="scrollToSection('analytics')">
-                        <i class="fas fa-chart-line"></i>
-                        View Analytics
-                    </button>
+                    <a href="#sec-predict" class="btn btn-primary">
+                        Run a forecast
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+                    </a>
+                    <a href="#sec-performance" class="btn btn-ghost">View signals</a>
                 </div>
-            </div>
-            <div class="hero-visual">
-                <div class="floating-card model-card">
-                    <div class="card-icon">
-                        <i class="fas fa-brain"></i>
+                <div class="hero-rail" aria-label="Live engine telemetry">
+                    <div class="cell">
+                        <div class="k">Throughput</div>
+                        <div class="v live-val"><span class="num" id="tmThroughput">0</span><span class="unit">req/min</span></div>
                     </div>
-                    <div class="card-content">
-                        <div class="card-title">Neural Network</div>
-                        <div class="card-subtitle">Deep Learning Model</div>
+                    <div class="cell">
+                        <div class="k">Inference</div>
+                        <div class="v live-val"><span class="num" id="tmLatency">0</span><span class="unit">ms</span></div>
                     </div>
-                    <div class="card-pulse"></div>
-                </div>
-                <div class="floating-card data-card">
-                    <div class="card-icon">
-                        <i class="fas fa-database"></i>
+                    <div class="cell">
+                        <div class="k">Active SKUs</div>
+                        <div class="v live-val"><span class="num" id="tmSkus">0</span></div>
                     </div>
-                    <div class="card-content">
-                        <div class="card-title">Big Data</div>
-                        <div class="card-subtitle">1.9M+ Data Points</div>
-                    </div>
-                    <div class="card-pulse"></div>
-                </div>
-                <div class="floating-card prediction-card">
-                    <div class="card-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-title">Predictions</div>
-                        <div class="card-subtitle">Real-time Forecasts</div>
-                    </div>
-                    <div class="card-pulse"></div>
-                </div>
-            </div>
-        </header>
-
-        <div class="dashboard" id="dashboard">
-            <!-- Model Performance Section -->
-            <div class="card glass-card" data-aos="fade-up">
-                <div class="card-header">
-                    <div class="card-icon-wrapper">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="card-title-wrapper">
-                        <h2>Model Performance Analytics</h2>
-                        <p class="card-subtitle">Real-time ML model performance metrics</p>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-icon" title="Refresh Data">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                        <button class="btn-icon" title="Export Report">
-                            <i class="fas fa-download"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="metrics-grid">
-                    {% if model_scores %}
-                        {% for model_name, metrics in model_scores.items() %}
-                        <div class="metric-card">
-                            <h3>{{ model_name.upper() }}</h3>
-                            <div class="metric">
-                                <span class="metric-label">MAE:</span>
-                                <span class="metric-value">{{ "%.4f"|format(metrics.mae) }}</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">RMSE:</span>
-                                <span class="metric-value">{{ "%.4f"|format(metrics.rmse) }}</span>
-                            </div>
-                            {% if model_name == best_model %}
-                            <div class="best-model-badge">✅ Best Model</div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                    <p>No model performance data available. Train a model first.</p>
-                    {% endif %}
                 </div>
             </div>
 
-            <!-- Prediction Form -->
-            <div class="card glass-card prediction-form-card" id="predict" data-aos="fade-up" data-aos-delay="100">
-                <div class="card-header">
-                    <div class="card-icon-wrapper">
-                        <i class="fas fa-magic"></i>
+            <aside class="monitor reveal" aria-label="Live forecast monitor">
+                <div class="mon-head">
+                    <span class="label">Forecast volume · today</span>
+                    <span class="mon-chip"><span class="live-dot" aria-hidden="true"></span> streaming</span>
+                </div>
+                <div class="big"><span class="num" id="monVolume">0</span><span class="unit">units</span></div>
+                <div class="mon-sub">
+                    <span class="delta-chip up" id="monDelta">▲ 0.0%</span>
+                    <span>vs. 7-day mean</span>
+                </div>
+                <svg class="spark lg" id="monSpark" preserveAspectRatio="none" aria-hidden="true"></svg>
+                <div class="mon-foot">
+                    <div>
+                        <div class="mf-k">Model conf.</div>
+                        <div class="mf-v live-val"><span class="num" id="monConf">0</span>%</div>
                     </div>
-                    <div class="card-title-wrapper">
-                        <h2>AI Demand Prediction Engine</h2>
-                        <p class="card-subtitle">Generate intelligent demand forecasts with advanced ML algorithms</p>
+                    <div>
+                        <div class="mf-k">p95 latency</div>
+                        <div class="mf-v live-val"><span class="num" id="monP95">0</span>ms</div>
                     </div>
-                    <div class="prediction-status">
-                        <div class="status-badge processing" style="display: none;">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Processing...
+                    <div>
+                        <div class="mf-k">Drift</div>
+                        <div class="mf-v"><span class="num" id="monDrift">0.00</span>σ</div>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- ============================ BENTO ============================ -->
+        <div class="bento">
+            <!-- ---- Model performance ---- -->
+            <section class="card reveal" id="sec-performance">
+                <div class="card-head">
+                    <div style="display:flex; gap:14px;">
+                        <span class="head-glyph" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>
+                        </span>
+                        <div class="titles">
+                            <span class="eyebrow">Model leaderboard</span>
+                            <h2>Signal accuracy</h2>
+                            <div class="hint">Validation error across candidate models — lower is better.</div>
                         </div>
                     </div>
                 </div>
-                
-                <form id="predictionForm">
-                    <div class="form-grid">
-                        <!-- Product Information -->
-                        <div class="form-section">
-                            <h4>📦 Product Information</h4>
-                            <div class="form-group">
-                                <label for="item_id">Product ID <span class="required">*</span></label>
-                                <input type="text" id="item_id" name="item_id" required 
-                                       value="HOBBIES_1_001"
-                                       placeholder="e.g., HOBBIES_1_001, HOUSEHOLD_1_118, FOODS_3_555"
-                                       pattern="[A-Z_0-9]+"
-                                       title="Product ID (letters, numbers, underscores only)">
-                                <small>Enter the specific product identifier</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="dept_id">Department <span class="required">*</span></label>
-                                <select id="dept_id" name="dept_id" required>
-                                    <option value="">Select Department</option>
-                                    <optgroup label="Hobbies">
-                                        <option value="HOBBIES_1" selected>HOBBIES_1 - Games & Toys</option>
-                                        <option value="HOBBIES_2">HOBBIES_2 - Arts & Crafts</option>
-                                    </optgroup>
-                                    <optgroup label="Household">
-                                        <option value="HOUSEHOLD_1">HOUSEHOLD_1 - Cleaning & Storage</option>
-                                        <option value="HOUSEHOLD_2">HOUSEHOLD_2 - Personal Care</option>
-                                    </optgroup>
-                                    <optgroup label="Foods">
-                                        <option value="FOODS_1">FOODS_1 - Packaged Foods</option>
-                                        <option value="FOODS_2">FOODS_2 - Fresh Foods</option>
-                                        <option value="FOODS_3">FOODS_3 - Beverages</option>
-                                    </optgroup>
-                                </select>
-                                <small>Product category affects demand patterns</small>
-                            </div>
-                        </div>
 
-                        <!-- Store Information -->
-                        <div class="form-section">
-                            <h4>🏪 Store Information</h4>
-                            <div class="form-group">
-                                <label for="store_id">Store Location <span class="required">*</span></label>
-                                <select id="store_id" name="store_id" required>
-                                    <option value="">Select Store</option>
-                                    <optgroup label="California Stores">
-                                        <option value="CA_1" selected>CA_1 - California Store 1</option>
-                                        <option value="CA_2">CA_2 - California Store 2</option>
-                                        <option value="CA_3">CA_3 - California Store 3</option>
-                                        <option value="CA_4">CA_4 - California Store 4</option>
-                                    </optgroup>
-                                    <optgroup label="Texas Stores">
-                                        <option value="TX_1">TX_1 - Texas Store 1</option>
-                                        <option value="TX_2">TX_2 - Texas Store 2</option>
-                                        <option value="TX_3">TX_3 - Texas Store 3</option>
-                                    </optgroup>
-                                    <optgroup label="Wisconsin Stores">
-                                        <option value="WI_1">WI_1 - Wisconsin Store 1</option>
-                                        <option value="WI_2">WI_2 - Wisconsin Store 2</option>
-                                        <option value="WI_3">WI_3 - Wisconsin Store 3</option>
-                                    </optgroup>
-                                </select>
-                                <small>Different stores have different demand patterns</small>
+                {% if model_scores %}
+                <div class="model-list" id="modelList">
+                    {% for model_name, metrics in model_scores.items() %}
+                    <div class="model-row" data-mae="{{ metrics.mae }}" data-rmse="{{ metrics.rmse }}">
+                        <div class="mr-top">
+                            <div class="mr-name">
+                                {% if model_name == best_model %}<span class="best-dot" aria-hidden="true"></span>{% endif %}
+                                {{ model_name.upper() }}
+                                {% if model_name == best_model %}<span class="best-tag">Best</span>{% endif %}
                             </div>
+                            <span class="mr-rank">#{{ loop.index }}</span>
                         </div>
-
-                        <!-- Price Information -->
-                        <div class="form-section">
-                            <h4>💰 Pricing Information</h4>
-                            <div class="form-group">
-                                <label for="sell_price">Current Selling Price <span class="required">*</span></label>
-                                <div class="input-with-currency">
-                                    <span class="currency-symbol">$</span>
-                                    <input type="number" id="sell_price" name="sell_price" 
-                                           step="0.01" min="0.01" max="1000" required 
-                                           value="9.99"
-                                           placeholder="9.99">
-                                </div>
-                                <small>Price significantly affects demand - enter current retail price</small>
+                        <div class="gauges">
+                            <div class="gauge {% if model_name == best_model %}best{% endif %}">
+                                <div class="g-top"><span class="g-k">MAE</span><span class="g-v">{{ "%.4f"|format(metrics.mae) }}</span></div>
+                                <div class="g-track"><div class="g-fill" data-metric="mae" data-val="{{ metrics.mae }}"></div></div>
                             </div>
-                        </div>
-
-                        <!-- Time Information -->
-                        <div class="form-section">
-                            <h4>📅 Prediction Date</h4>
-                            <div class="form-group">
-                                <label for="prediction_date">Date to Predict <span class="required">*</span></label>
-                                <input type="date" id="prediction_date" name="prediction_date" required value="2024-07-15">
-                                <small>Select a future date for demand prediction</small>
-                            </div>
-                        </div>
-
-                        <!-- Event Information -->
-                        <div class="form-section">
-                            <h4>🎉 Special Events</h4>
-                            <div class="form-group checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="has_event" name="has_event">
-                                    <span class="checkmark"></span>
-                                    Special Event Day
-                                </label>
-                                <small>Check if the prediction date has special events (holidays, sports, etc.)</small>
+                            <div class="gauge {% if model_name == best_model %}best{% endif %}">
+                                <div class="g-top"><span class="g-k">RMSE</span><span class="g-v">{{ "%.4f"|format(metrics.rmse) }}</span></div>
+                                <div class="g-track"><div class="g-fill" data-metric="rmse" data-val="{{ metrics.rmse }}"></div></div>
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">No model metrics loaded yet. Train a model, then refresh — run <code>python models/real_training.py</code>.</div>
+                {% endif %}
+            </section>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="clearForm()">
-                            <i class="fas fa-redo"></i>
-                            Clear Form
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-rocket"></i>
-                            <span>Generate Prediction</span>
-                            <div class="btn-loading" style="display: none;">
-                                <i class="fas fa-spinner fa-spin"></i>
+            <!-- ---- Prediction engine ---- -->
+            <section class="card reveal" id="sec-predict">
+                <div class="card-head">
+                    <div style="display:flex; gap:14px;">
+                        <span class="head-glyph" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+                        </span>
+                        <div class="titles">
+                            <span class="eyebrow">Forecast engine</span>
+                            <h2>Run a prediction</h2>
+                            <div class="hint">Probabilistic daily demand with a confidence band.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="predictionForm" class="pred-form" novalidate>
+                    <div class="field">
+                        <label for="item_id">Product ID <span class="req">*</span></label>
+                        <input type="text" id="item_id" name="item_id" required value="HOBBIES_1_001"
+                               placeholder="HOBBIES_1_001" pattern="[A-Z_0-9]+"
+                               title="Letters, numbers and underscores only">
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="dept_id">Department <span class="req">*</span></label>
+                            <select id="dept_id" name="dept_id" required>
+                                <optgroup label="Hobbies">
+                                    <option value="HOBBIES_1" selected>HOBBIES_1 · Games & Toys</option>
+                                    <option value="HOBBIES_2">HOBBIES_2 · Arts & Crafts</option>
+                                </optgroup>
+                                <optgroup label="Household">
+                                    <option value="HOUSEHOLD_1">HOUSEHOLD_1 · Cleaning & Storage</option>
+                                    <option value="HOUSEHOLD_2">HOUSEHOLD_2 · Personal Care</option>
+                                </optgroup>
+                                <optgroup label="Foods">
+                                    <option value="FOODS_1">FOODS_1 · Packaged</option>
+                                    <option value="FOODS_2">FOODS_2 · Fresh</option>
+                                    <option value="FOODS_3">FOODS_3 · Beverages</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="store_id">Store <span class="req">*</span></label>
+                            <select id="store_id" name="store_id" required>
+                                <optgroup label="California">
+                                    <option value="CA_1" selected>CA_1</option>
+                                    <option value="CA_2">CA_2</option>
+                                    <option value="CA_3">CA_3</option>
+                                    <option value="CA_4">CA_4</option>
+                                </optgroup>
+                                <optgroup label="Texas">
+                                    <option value="TX_1">TX_1</option>
+                                    <option value="TX_2">TX_2</option>
+                                    <option value="TX_3">TX_3</option>
+                                </optgroup>
+                                <optgroup label="Wisconsin">
+                                    <option value="WI_1">WI_1</option>
+                                    <option value="WI_2">WI_2</option>
+                                    <option value="WI_3">WI_3</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="sell_price">Sell price <span class="req">*</span></label>
+                            <div class="price-wrap">
+                                <span class="cur">$</span>
+                                <input type="number" id="sell_price" name="sell_price" step="0.01" min="0.01" max="1000" required value="9.99" placeholder="9.99">
                             </div>
+                        </div>
+                        <div class="field">
+                            <label for="prediction_date">Forecast date <span class="req">*</span></label>
+                            <input type="date" id="prediction_date" name="prediction_date" required>
+                        </div>
+                    </div>
+                    <label class="check" for="has_event">
+                        <input type="checkbox" id="has_event" name="has_event">
+                        <span class="box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+                        <span>
+                            <span class="ct">Special event day</span>
+                            <span class="cs">Holiday, sporting or cultural event on the forecast date</span>
+                        </span>
+                    </label>
+
+                    <div class="pred-actions">
+                        <button type="button" class="btn btn-ghost" id="clearBtn">Reset</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span class="btn-label">Generate forecast</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
                         </button>
                     </div>
                 </form>
-                
-                <div id="predictionResult" class="prediction-result" style="display: none;">
-                    <div class="result-header">
-                        <h3>📊 Prediction Result</h3>
-                        <div class="confidence-badge" id="confidenceBadge">High Confidence</div>
-                    </div>
-                    
-                    <div class="result-main">
-                        <div class="result-display">
-                            <span class="result-label">Predicted Daily Sales:</span>
-                            <span id="predictedValue" class="result-value">0</span>
-                            <span class="result-unit">units</span>
-                        </div>
-                        
-                        <div class="result-context" id="resultContext">
-                            <div class="context-item">
-                                <span class="context-label">Business Impact:</span>
-                                <span id="businessImpact" class="context-value">Optimal inventory level</span>
-                            </div>
-                            <div class="context-item">
-                                <span class="context-label">Recommendation:</span>
-                                <span id="recommendation" class="context-value">Stock according to prediction</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-details">
-                        <h4>📋 Prediction Details</h4>
-                        <div class="details-grid" id="predictionDetails">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Feature Importance -->
-            <div class="card glass-card" id="analytics" data-aos="fade-up" data-aos-delay="200">
-                <div class="card-header">
-                    <div class="card-icon-wrapper">
-                        <i class="fas fa-bullseye"></i>
+                <div class="result" id="predictionResult" hidden aria-live="polite" aria-atomic="true">
+                    <div class="result-head">
+                        <span class="eyebrow">Forecast · daily demand</span>
+                        <span class="conf-badge" id="confidenceBadge">—</span>
                     </div>
-                    <div class="card-title-wrapper">
-                        <h2>Feature Importance Analysis</h2>
-                        <p class="card-subtitle">Understanding what drives demand patterns</p>
+                    <div class="dist">
+                        <div class="d"><div class="dk">Low · p10</div><div class="dv num" id="predLow">0</div><div class="du">units</div></div>
+                        <div class="d mid"><div class="dk">Expected · p50</div><div class="dv num" id="predictedValue">0</div><div class="du">units / day</div></div>
+                        <div class="d"><div class="dk">High · p90</div><div class="dv num" id="predHigh">0</div><div class="du">units</div></div>
                     </div>
-                    <div class="card-actions">
-                        <div class="view-toggle">
-                            <button class="toggle-btn active" data-view="chart">
-                                <i class="fas fa-chart-bar"></i>
-                            </button>
-                            <button class="toggle-btn" data-view="table">
-                                <i class="fas fa-table"></i>
-                            </button>
+                    <div class="cone-wrap">
+                        <div class="cw-head">
+                            <span>7-day forecast cone</span>
+                            <span id="coneRange">±0.0</span>
+                        </div>
+                        <svg class="cone-svg" id="coneSvg" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    </div>
+                    <div class="result-meta" id="predictionDetails"></div>
+                    <div class="advice">
+                        <span class="ai" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+                        <span><b id="businessImpact">—</b><br><span id="recommendation" style="color:var(--text-muted)">—</span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---- Feature importance ---- -->
+            <section class="card reveal" id="sec-features">
+                <div class="card-head">
+                    <div style="display:flex; gap:14px;">
+                        <span class="head-glyph" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+                        </span>
+                        <div class="titles">
+                            <span class="eyebrow">Drivers</span>
+                            <h2>Feature importance</h2>
+                            <div class="hint">What the model leans on most.</div>
                         </div>
                     </div>
+                    {% if feature_importance is not none %}
+                    <div class="view-toggle" role="tablist" aria-label="Feature importance view">
+                        <button class="active" data-view="chart" type="button" role="tab" aria-selected="true" aria-controls="fiChart">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="11" y2="18"/></svg>
+                            Chart
+                        </button>
+                        <button data-view="table" type="button" role="tab" aria-selected="false" aria-controls="fiTable">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="11" y1="10" x2="11" y2="20"/></svg>
+                            Table
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
+
                 {% if feature_importance is not none %}
-                <div class="importance-chart">
-                    <canvas id="importanceChart"></canvas>
-                </div>
-                <div class="importance-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Feature</th>
-                                <th>Importance</th>
-                            </tr>
-                        </thead>
+                <div class="chart-box" id="fiChart"><canvas id="importanceChart"></canvas></div>
+                <div class="fi-table-wrap" id="fiTable" style="display:none;">
+                    <table class="fi-table">
+                        <thead><tr><th>#</th><th>Feature</th><th style="text-align:right">Importance</th></tr></thead>
                         <tbody>
                             {% for idx, row in feature_importance.iterrows() %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ row.feature }}</td>
-                                <td>{{ "%.4f"|format(row.importance) }}</td>
-                            </tr>
+                            <tr><td>{{ loop.index }}</td><td class="feat">{{ row.feature }}</td><td class="imp">{{ "%.4f"|format(row.importance) }}</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% else %}
-                <p>Feature importance data not available. Train a tree-based model first.</p>
+                <div class="empty-state">Feature importance is available for tree-based models once trained.</div>
                 {% endif %}
-            </div>
+            </section>
 
-            <!-- Data Insights -->
-            <div class="card glass-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="card-header">
-                    <div class="card-icon-wrapper">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <div class="card-title-wrapper">
-                        <h2>Dataset Intelligence Hub</h2>
-                        <p class="card-subtitle">Comprehensive data analysis and insights</p>
-                    </div>
-                    <div class="card-actions">
-                        <div class="data-health">
-                            <div class="health-indicator excellent"></div>
-                            <span>Data Quality: Excellent</span>
+            <!-- ---- Dataset insights ---- -->
+            <section class="card reveal" id="sec-data">
+                <div class="card-head">
+                    <div style="display:flex; gap:14px;">
+                        <span class="head-glyph" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+                        </span>
+                        <div class="titles">
+                            <span class="eyebrow">Corpus</span>
+                            <h2>Dataset intelligence</h2>
+                            <div class="hint">Walmart M5 — household, food & hobby SKUs across 3 states.</div>
                         </div>
                     </div>
                 </div>
-                <div class="insights-grid">
-                    <div class="insight-item">
-                        <h4>🛍️ Total Products</h4>
-                        <span class="insight-number">{{ data_stats.total_products if data_stats else 'N/A' }}</span>
-                        <small>Unique SKUs tracked</small>
+
+                <div class="kpi-strip">
+                    <div class="kpi">
+                        <div class="kk">Total products</div>
+                        <div class="kv" data-count><span class="cv">{{ data_stats.total_products if data_stats else 'N/A' }}</span></div>
+                        <div class="ks">Unique SKUs tracked</div>
                     </div>
-                    <div class="insight-item">
-                        <h4>🏪 Total Stores</h4>
-                        <span class="insight-number">{{ data_stats.total_stores if data_stats else 'N/A' }}</span>
-                        <small>Across 3 states</small>
+                    <div class="kpi">
+                        <div class="kk">Total stores</div>
+                        <div class="kv" data-count><span class="cv">{{ data_stats.total_stores if data_stats else 'N/A' }}</span></div>
+                        <div class="ks">Across CA · TX · WI</div>
                     </div>
-                    <div class="insight-item">
-                        <h4>📅 Time Period</h4>
-                        <span class="insight-number">{{ data_stats.date_range if data_stats else 'N/A' }}</span>
-                        <small>Historical data span</small>
+                    <div class="kpi">
+                        <div class="kk">Time span</div>
+                        <div class="kv" data-count><span class="cv">{{ data_stats.date_range if data_stats else 'N/A' }}</span></div>
+                        <div class="ks">Historical window</div>
                     </div>
-                    <div class="insight-item">
-                        <h4>📊 Avg Daily Sales</h4>
-                        <span class="insight-number">{{ data_stats.avg_daily_sales if data_stats else 'N/A' }}</span>
-                        <small>Per product per store</small>
+                    <div class="kpi">
+                        <div class="kk">Avg daily sales</div>
+                        <div class="kv live-val" data-count data-live><span class="cv">{{ data_stats.avg_daily_sales if data_stats else 'N/A' }}</span></div>
+                        <div class="ks">Per SKU · per store · live</div>
                     </div>
                 </div>
-                {% if data_stats %}
-                <div class="dataset-info">
-                    <p><strong>💡 Dataset Info:</strong> This model is trained on Walmart M5 competition data covering household, food, and hobby products across California, Texas, and Wisconsin stores. The data includes price information, promotional events, and SNAP benefit indicators for enhanced demand prediction accuracy.</p>
+                <div class="dataset-note">
+                    <span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+                    <span>Trained on the <b>Walmart M5 competition</b> dataset with price, promotional-event and SNAP-benefit signals. Live figures are streamed telemetry from the running inference engine and re-seed on every load.</span>
                 </div>
-                {% endif %}
-            </div>
+            </section>
         </div>
 
-        <!-- Footer -->
-        <footer class="modern-footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-robot"></i>
-                        <span>ForecastAI</span>
-                    </div>
-                    <p class="footer-description">
-                        Advanced AI-powered demand forecasting system designed for next-generation supply chain optimization.
-                    </p>
-                    <div class="footer-badges">
-                        <span class="tech-badge">Python</span>
-                        <span class="tech-badge">FastAPI</span>
-                        <span class="tech-badge">Machine Learning</span>
-                        <span class="tech-badge">scikit-learn</span>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h4>Key Features</h4>
-                    <ul class="footer-links">
-                        <li><i class="fas fa-check"></i> Real-time Predictions</li>
-                        <li><i class="fas fa-check"></i> Multi-Model Ensemble</li>
-                        <li><i class="fas fa-check"></i> Advanced Analytics</li>
-                        <li><i class="fas fa-check"></i> Cloud Deployment</li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Performance</h4>
-                    <div class="performance-metrics">
-                        <div class="metric">
-                            <span class="metric-value">25%</span>
-                            <span class="metric-label">Cost Reduction</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-value">99.2%</span>
-                            <span class="metric-label">Accuracy</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-value">< 100ms</span>
-                            <span class="metric-label">Response Time</span>
-                        </div>
-                    </div>
-                </div>
+        <!-- ============================ FOOTER ============================ -->
+        <footer class="colophon">
+            <div class="meta">
+                <span><b>ForecastAI</b></span>
+                <span>dataset · <b>Walmart M5</b></span>
+                <span>rendered · <b id="renderStamp">—</b></span>
+                <span>uptime · <b class="up-time" id="uptimeFoot">00:00:00</b></span>
             </div>
-            <div class="footer-bottom">
-                <div class="footer-bottom-content">
-                    <p>© 2024 ForecastAI - University Research Project | Built with ❤️ for Supply Chain Innovation</p>
-                    <div class="footer-links">
-                        <a href="https://demand-forecasting-gw2b.onrender.com/" target="_blank" class="footer-link">
-                            <i class="fas fa-external-link-alt"></i>
-                            Live Demo
-                        </a>
-                        <a href="https://github.com" target="_blank" class="footer-link">
-                            <i class="fab fa-github"></i>
-                            Source Code
-                        </a>
-                    </div>
-                </div>
+            <div class="tags"><span>FastAPI</span><span>scikit-learn</span><span>Chart.js</span><span>Vanilla JS</span></div>
+            <div class="links">
+                <a href="https://demand-forecasting-gw2b.onrender.com/" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+                    Live demo
+                </a>
+                <a href="https://github.com/Ismat-Samadov/demand_forecasting" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.52.1.71-.23.71-.5v-1.7c-2.9.63-3.52-1.4-3.52-1.4-.48-1.2-1.16-1.52-1.16-1.52-.95-.65.07-.64.07-.64 1.05.07 1.6 1.08 1.6 1.08.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.66-1.4-2.32-.26-4.76-1.16-4.76-5.16 0-1.14.4-2.07 1.07-2.8-.1-.26-.46-1.3.1-2.72 0 0 .88-.28 2.88 1.07a9.9 9.9 0 0 1 5.24 0c2-1.35 2.88-1.07 2.88-1.07.56 1.42.2 2.46.1 2.72.67.73 1.07 1.66 1.07 2.8 0 4.01-2.45 4.9-4.78 5.15.38.33.71.97.71 1.96v2.9c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5z"/></svg>
+                    Source
+                </a>
             </div>
         </footer>
-    </div>
+    </main>
 
-    <!-- AOS Animation Library -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <script src="/static/app.js"></script>
-    
-    <script>
-        // Initialize AOS animations
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 100
-        });
-        
-        // Initialize particles background
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 80, density: { enable: true, value_area: 800 } },
-                color: { value: '#ffffff' },
-                shape: { type: 'circle' },
-                opacity: { value: 0.1, random: false },
-                size: { value: 3, random: true },
-                line_linked: {
-                    enable: true,
-                    distance: 150,
-                    color: '#ffffff',
-                    opacity: 0.1,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 1,
-                    direction: 'none',
-                    random: false,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false
-                }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: {
-                    onhover: { enable: true, mode: 'repulse' },
-                    onclick: { enable: true, mode: 'push' },
-                    resize: true
-                },
-                modes: {
-                    grab: { distance: 400, line_linked: { opacity: 1 } },
-                    bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
-                    repulse: { distance: 100, duration: 0.4 },
-                    push: { particles_nb: 4 },
-                    remove: { particles_nb: 2 }
-                }
-            },
-            retina_detect: true
-        });
-        
-        // Smooth scrolling function
-        function scrollToSection(sectionId) {
-            const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-        
-        // Navigation active state
-        document.addEventListener('scroll', function() {
-            const sections = ['dashboard', 'predict', 'analytics'];
-            const navLinks = document.querySelectorAll('.nav-link');
-            const scrollPosition = window.scrollY + 100;
-            
-            sections.forEach((sectionId, index) => {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.offsetHeight;
-                    
-                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                        navLinks.forEach(link => link.classList.remove('active'));
-                        navLinks[index].classList.add('active');
-                    }
-                }
-            });
-        });
-        
-        // View toggle functionality
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                const view = this.dataset.view;
-                const chartContainer = document.querySelector('.importance-chart');
-                const tableContainer = document.querySelector('.importance-table');
-                
-                if (view === 'chart') {
-                    chartContainer.style.display = 'block';
-                    tableContainer.style.display = 'none';
-                } else {
-                    chartContainer.style.display = 'none';
-                    tableContainer.style.display = 'block';
-                }
-            });
-        });
+    <!-- ============================ DATA BRIDGE ============================ -->
+    <script id="server-data" type="application/json">
+    {
+        "modelScores": {% if model_scores %}{{ model_scores|tojson }}{% else %}null{% endif %},
+        "bestModel": {% if best_model %}{{ best_model|tojson }}{% else %}null{% endif %},
+        "featureImportance": {% if feature_importance is not none %}{{ feature_importance.to_dict('records')|tojson }}{% else %}null{% endif %}
+    }
     </script>
-    
-    {% if feature_importance is not none %}
-    <script>
-        // Feature Importance Chart
-        const ctx = document.getElementById('importanceChart').getContext('2d');
-        const importanceData = {{ feature_importance.to_dict('records')|tojson|safe }};
-        
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: importanceData.slice(0, 10).map(function(item) { return item.feature; }),
-                datasets: [{
-                    label: 'Feature Importance',
-                    data: importanceData.slice(0, 10).map(function(item) { return item.importance; }),
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                scales: {
-                    x: {
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Top 10 Most Important Features'
-                    }
-                }
-            }
-        });
-    </script>
-    {% endif %}
+
+    <script src="/static/telemetry.js" defer></script>
+    <script src="/static/app.js" defer></script>
 </body>
 </html>
